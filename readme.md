@@ -1,47 +1,86 @@
-# Billboard scrapper
-This project is an iteration over a project originally created for a big data course at ISEP. 
+# 🎵 Billboard Scraper
 
-The base project was a billboard scrapper combined with the spotify API to extract data over the top 100 songs. This data was then used to feed elasticsearch and visualize it with Kibana. As expected, we didn't see any evident correlation between details about the songs and their popularity (or it would means that we found the magic recipe to produce hits).
+This project is an upgraded version of a course project developed at **ISEP**. It was originally designed to explore correlations between music features (via Spotify) and their chart success. Today, it has evolved into an **automated scraper** that collects Billboard chart data weekly and shares it with the community through Kaggle.
 
-When doing our project, we had to scrap data by ourselve from the billboard website because no dataset were up to date. This project is a scrapper that run once a week and is pushing the scrapped data from the billboard to kaggle so everybody can use it.
+> 🚀 **Live dataset updated weekly on [Kaggle](https://www.kaggle.com/datasets/ludmin/billboard)**
 
-## Data
+---
 
-The data is updated and pushed to Kaggle every week and can be found [here](https://www.kaggle.com/datasets/ludmin/billboard).
+## 📊 Project Overview
 
-#### Current charts being scrapped:
-- `billboard200.csv` for the Billboard 200 chart
-- `hot100.csv` for the Hot 100 chart
-- `radio.csv` for the Radio chart
-- `streaming_songs.csv` for the Streaming songs chart
-- `digital_songs.csv` for the Digital song sales chart
+Initially, we scraped Billboard & Spotify data to feed an Elasticsearch index and visualize it using **Kibana**. As expected (or unfortunately?), no magic formula for a hit song emerged — but the pipeline worked beautifully.
 
-#### Contains details about :
-- Date
-- Song's title
-- Artist's name
-- Rank
-- Last week rank
-- Peak position
-- Weeks in charts
-- Image Url
+Due to the lack of up-to-date public datasets, we built our **own automated Billboard chart scraper**, which now:
+- Runs weekly via Airflow
+- Pushes structured chart data directly to Kaggle
 
-## Files explanation
-#### Dags folder:
-- `billboard.py` is the dags file that is run by airflow to scrap the data from the billboard website and push it to kaggle.
-- `utils.py` contains the functions used by the dags file to scrap the data and push it to kaggle.
-#### Scrapper folder:
-- `scrap_full.py` is a script that scrapes the designated billboard page from a given start date to a given end date, saving the results to a CSV file. This one was used to scrap the data for the first time and is not used anymore.
-- `weekly_scrap.py` is a script that scrapes the designated billboard page from a given start date to a given end date, saving the results to a CSV file. This one is a backup script that is designed to be manually used only when the airflow DAG is not working (and was used to make a save for each week for a potential API usage).
-- `utils.py` contains utility functions used by the scrapping scripts.
-- `config.ini` is a configuration file that contains the settings for the scrapper, such as the URL to scrap, the start date, and the end date.
-- `requirements.txt` contains the dependencies required to run the scrapper.
+---
 
-## How to run the scrapper (in case you want to run it manually):
-1. Install the dependencies by running `pip install -r requirements.txt`.
-2. Create/edit the `config.ini` file, editing the settings.
-3. Check/edit the output folder from the script, for my project I used Minio (a S3 compatible storage) so I set the output folder to Minio, but you might want to set it to a local folder or another S3 compatible storage.
-4. Run the scrapper by executing `python weekly_scrap.py --config ../hot100/config.ini` or `python scrap_full.py --config ../hot100/config.ini` (the first one is the one used by airflow, the second one is a backup script that can be used to scrap the data manually).
+## 📁 Current Charts Scraped
 
-The scrapper is probably not perfect and could probably be sped up by parallelizing the requests.
+Each chart is stored as a CSV file:
 
+| Chart Name        | File                     |
+|-------------------|--------------------------|
+| Billboard 200     | `billboard200.csv`       |
+| Hot 100           | `hot100.csv`             |
+| Radio             | `radio.csv`              |
+| Streaming Songs   | `streaming_songs.csv`    |
+| Digital Song Sales| `digital_songs.csv`      |
+
+### 📦 Each entry contains:
+- 🗓️ Date  
+- 🎵 Song title  
+- 🎤 Artist  
+- 🔢 Current rank  
+- ⬆️ Last week’s rank  
+- 🏆 Peak position  
+- ⌛ Weeks on chart  
+- 🖼️ Image URL  
+
+---
+
+## 📚 Project Structure
+
+### `dags/` folder:
+- `billboard.py` – Airflow DAG that scrapes and uploads data
+- `utils.py` – Helper functions (scraping, uploading, etc.)
+
+### `scrapper/` folder:
+- `scrap_full.py` – One-time historical scrapping tool
+- `weekly_scrap.py` – Main script used by Airflow (manual fallback)
+- `utils.py` – Utility functions for scraping
+- `config.ini` – Scraper settings (URLs, date ranges)
+- `requirements.txt` – Required dependencies
+
+---
+
+## ⚙️ How to Run the Scraper Manually
+
+1. 📦 Install dependencies  
+   ```bash
+   pip install -r requirements.txt
+    ```
+2. ⚙️ Edit `config.ini` with the desired Billboard chart and date range
+
+3. 📁 Set your output destination (local path, S3, or Minio)
+
+4. ▶️ Run the scraper:
+    ```bash
+    python scrapper/weekly_scrap.py --config config.ini
+    ```
+💡 You can also use scrap_full.py for full-history scrapes.
+
+---
+
+## 🤝 Contributions Welcome
+
+Feel free to open issues, suggest improvements, or contribute directly to the scrapers.  
+You can also help by expanding the project to include additional Billboard charts or enhance the Airflow pipeline.
+
+---
+
+## 📬 Contact
+
+Maintained by [@godefroylmb](https://github.com/godefroylmb)  
+📊 Weekly dataset updates on [Kaggle](https://www.kaggle.com/datasets/ludmin/billboard)
