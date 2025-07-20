@@ -61,7 +61,7 @@ Each chart is stored as a CSV file:
    ```bash
    pip install -r requirements.txt
     ```
-2. ⚙️ Edit `config.ini` with the desired Billboard chart and date range
+2. ⚙️ Edit `config.ini` with the desired Billboard chart and start date (default end date is today, to modify, change it directly in the script).
 
 3. 📁 Set your output destination (local path, S3, or Minio)
 
