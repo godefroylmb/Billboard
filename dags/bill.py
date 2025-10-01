@@ -8,10 +8,11 @@ from kaggle.api.kaggle_api_extended import KaggleApi
 import os
 import aiohttp
 import asyncio
+from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 
 bucket_name = 'billboard'
-access_key = os.environ.get('MINIO_ACCESS_KEY', '')
-secret_key = os.environ.get('MINIO_SECRET_KEY', '')
+access_key = os.environ.get('MINIO_ACCESS_KEY', 'default_access_key')
+secret_key = os.environ.get('MINIO_SECRET_KEY', 'default_secret_key')
 
 s3_client = boto3.client(
     's3',
@@ -72,7 +73,7 @@ with DAG(
         file_path = kwargs.get('file_path', None)
         download_file_localy(s3_client, file_path)
 
-    def upload_to_kaggle(**kwargs):
+    def upload_to_kaggle_task(**kwargs):
         api = KaggleApi()
         api.authenticate()
         api.dataset_create_version(kaggle_folder, version_notes = f"Updated on {get_date(**kwargs)}")
@@ -154,7 +155,8 @@ with DAG(
         task_id='complete_streaming',
         python_callable=append_to_file,
         provide_context=True,
-        op_kwargs={'charts': 'streaming-songs', 'collection_key': streamingsong_key}
+        op_kwargs={'charts': 'streaming-songs', 'collection_key': streamingsong_key},
+	depends_on_past=False
     )
 
     download_streaming = PythonOperator(
@@ -188,8 +190,18 @@ with DAG(
 
     upload_to_kaggle = PythonOperator(
         task_id='upload_to_kaggle',
-        python_callable=upload_to_kaggle,
+        python_callable=upload_to_kaggle_task,
         provide_context=True,
+    )
+
+    trigger_kaggle_checker = TriggerDagRunOperator(
+    task_id="trigger_kaggle_checker",
+    trigger_dag_id="kaggle_update_checker",
+    conf={
+        "dataset": "ludmin/billboard",
+        "title": "📊 Billboard dataset updated!",
+        "description": "The Billboard charts dataset has just been refreshed and uploaded to Kaggle."
+    },
     )
 
     scrap_hot100 >> complete_hot100  >> download_hot100
@@ -198,4 +210,4 @@ with DAG(
     scrap_digitalsong >> complete_digitalsong  >> download_digitalsong
     scrap_streaming >> complete_streaming  >> download_streaming
 
-    [download_hot100, download_billboard200, download_radio, download_digitalsong, download_streaming] >> upload_to_kaggle
+    [download_hot100, download_billboard200, download_radio, download_digitalsong, download_streaming] >> upload_to_kaggle >> trigger_kaggle_checker
