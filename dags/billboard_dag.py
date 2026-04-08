@@ -105,7 +105,7 @@ with DAG(
         context = get_current_context()
         version_notes = f"Airflow run {context['run_id']} - {context['ds']}"
 
-        uploaded_files = upload_export_folder_to_kaggle(
+        upload_result = upload_export_folder_to_kaggle(
             export_dir=export_dir,
             dataset_ref=dataset_ref,
             kaggle_api_token=kaggle_api_token,
@@ -114,7 +114,7 @@ with DAG(
 
         return {
             "dataset": dataset_ref,
-            "uploaded_files": uploaded_files,
+            "upload_result": upload_result,
         }
 
     scrap_outputs = scrap_group()
