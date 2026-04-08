@@ -22,7 +22,7 @@ def get_oldest_date():
     dates = [datetime.fromisoformat(c["start_date"]) for c in charts.values()]
     return min(dates)
 
-billboard_dataset = Dataset("my_billboard_dataset_uri")
+billboard_dataset = Dataset("billboard_data")
 
 with DAG(
     dag_id="billboard_dag",
